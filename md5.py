@@ -1,10 +1,18 @@
-def converteParaBinario(msg):
+def imprimeBinario(bin):
+    if (len(bin) > 20): 
+        msg = f"Tam: {len(bin)} - Bin: {bin[:10]}...{bin[-10:]}" 
+    else: 
+        msg = f"Tam: {len(bin)} - Bin: {bin}"
+    
+    print(msg)
+
+def converteStrParaBinario(msg):
     bin_msg = ""
     for caractere in msg:
         bin_msg += bin(ord(caractere))[2:]
     return bin_msg
 
-def extensao(msg_binaria):
+def extensao_passo_1(msg_binaria):
     congruent = 448
     modulo = 512
 
@@ -19,10 +27,27 @@ def extensao(msg_binaria):
     msg_estendida = msg_estendida.ljust(tam_final, '0')
     return msg_estendida
 
-mensagem = input("Digite a mensagem:")
-msg_binaria = converteParaBinario(mensagem)
-print("Tam:", len(msg_binaria), " - Bin:", msg_binaria[:10])
+def converteIntParaBinario(x, tam_final):
+    x_em_binario = bin(x)[2:]
+    if (len(x_em_binario) < tam_final):
+        x_em_binario = x_em_binario.rjust(tam_final, '0')
+    else:
+        x_em_binario = x_em_binario[-tam_final:]
+    return x_em_binario
 
-print("\n((Passo 1: Extensão))")
-mensagem_estendida = extensao(msg_binaria)
-print("Tam:", len(mensagem_estendida), "Bin:", mensagem_estendida[:10])
+def extensao_passo_2(msg_passo_1, b):
+    b_64bit = converteIntParaBinario(b, 64)
+    return msg_passo_1 + b_64bit
+
+mensagem = input("Digite a mensagem:")
+tam_msg_original = len(mensagem)
+msg_binaria = converteStrParaBinario(mensagem)
+imprimeBinario(msg_binaria)
+
+print("\nPasso 1: Extensão com bits de preenchimento")
+msg_passo_1 = extensao_passo_1(msg_binaria)
+imprimeBinario(msg_passo_1)
+
+print("\nPasso 2: Extensão com o valor do tamanho")
+msg_passo_2 = extensao_passo_2(msg_passo_1, tam_msg_original)
+imprimeBinario(msg_passo_2)
