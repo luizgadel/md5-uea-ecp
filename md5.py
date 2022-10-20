@@ -121,9 +121,17 @@ imprimeBinario(msg_passo_1)
 print("\nPasso 2: Extensão com o valor do tamanho")
 msg_passo_2 = extensao_passo_2(msg_passo_1, tam_msg_original)
 imprimeBinario(msg_passo_2)
+tam_msg_p2 = len(msg_passo_2)
 
 print("\nPasso 3: Inicializar Buffer MD")
 MD_buffer = inicializa_md_buffer()
 print(MD_buffer)
 
 print("\nPasso 4: Processamento da mensagem em blocos de 16 palavras")
+tam_word = 16
+qtd_words = tam_msg_p2/tam_word
+for i in range(qtd_words):
+    X = msg_passo_2[tam_word*i:tam_word*(i+1)]
+    """
+    ...
+    """
