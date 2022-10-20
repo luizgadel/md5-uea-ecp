@@ -16,16 +16,13 @@ def extensao(msg_binaria):
     else: 
         tam_final = congruent
 
-    print("[ Tamanho pós-conversão:", tam_final, ']')
     msg_estendida = msg_estendida.ljust(tam_final, '0')
     return msg_estendida
 
 mensagem = input("Digite a mensagem:")
 msg_binaria = converteParaBinario(mensagem)
-print("Tam:", len(msg_binaria))
-print("Bin:", msg_binaria)
+print("Tam:", len(msg_binaria), " - Bin:", msg_binaria[:10])
 
 print("\n((Passo 1: Extensão))")
 mensagem_estendida = extensao(msg_binaria)
-print("Tam:", len(mensagem_estendida))
-print("Bin:", mensagem_estendida)
+print("Tam:", len(mensagem_estendida), "Bin:", mensagem_estendida[:10])
