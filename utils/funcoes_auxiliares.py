@@ -1,4 +1,8 @@
 
+from utils.int_utils import converteIntParaBinario, desloca_esquerda
+from utils.string_utils import imprimeBinario
+
+
 def fun_aux(X: int, Y: int, Z: int):
     x_bin = bin(X)[2:]
     y_bin = bin(Y)[2:]
@@ -63,6 +67,6 @@ def fun_round(a: int, b: int, c: int, d: int, x: int, s: int, t: int, num_round:
     else:
         resultado_f_aux = fun_aux_I(b, c, d)
     a += resultado_f_aux + x + t
-    a = a << s
+    a = desloca_esquerda(a, s)
     a += b
     return a

@@ -22,11 +22,12 @@ def binParaHex(b: str):
     b_revertido = string_reversa(b)
     tam_bin = len(b)
     tam_byte = 8
+    tam_hex_por_byte = 2
     n_bytes = tam_bin//tam_byte
     msg = ""
     for i in range(n_bytes):
         byte_i = b_revertido[i*tam_byte:(i+1)*tam_byte]
         byte_int_value = int(byte_i, base=2)
         h = hex(byte_int_value)
-        msg += h[2:]
+        msg += h[2:].rjust(tam_hex_por_byte, '0')
     return msg

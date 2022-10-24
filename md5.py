@@ -3,7 +3,9 @@ from utils.string_utils import *
 from utils.int_utils import *
 
 tam_nibble = 4
-tam_palavra = 16
+tam_palavra = 32
+n_palavras_por_bloco = 16
+tam_bloco = n_palavras_por_bloco*tam_palavra
 
 
 def extensao_passo_1(msg_binaria):
@@ -81,40 +83,46 @@ MD_buffer = {
 }
 
 # Passo 4: Processamento da mensagem em blocos de 16 palavras
-qtd_palavras = tam_msg_p2//tam_palavra
-X = []
-for i in range(qtd_palavras):
-    inicio_p = tam_palavra*i
-    iesima_palavra = msg_passo_2[inicio_p:inicio_p+tam_palavra]
-    iesima_palavra_int = int(iesima_palavra, base=2)
-    X.append(iesima_palavra_int)
+n_blocos = tam_msg_p2 // tam_bloco
+for i in range(n_blocos):
+    bloco_i = msg_passo_2[i*tam_bloco:(i+1)*tam_bloco]
+    X = []
+    for j in range(n_palavras_por_bloco):
+        inicio_p = tam_palavra*j
+        iesima_palavra = msg_passo_2[inicio_p:inicio_p+tam_palavra]
+        iesima_palavra_int = int(iesima_palavra, base=2)
+        X.append(iesima_palavra_int)
 
-A = MD_buffer["A"]
-AA = A
-B = MD_buffer["B"]
-BB = B
-C = MD_buffer["C"]
-CC = C
-D = MD_buffer["D"]
-DD = D
+    A = MD_buffer["A"]
+    AA = A
+    B = MD_buffer["B"]
+    BB = B
+    C = MD_buffer["C"]
+    CC = C
+    D = MD_buffer["D"]
+    DD = D
 
-for i in range(64):
-    i_mod_4 = i % 4
-    i_div_16 = (i // 16)
-    num_round = i_div_16 + 1
-    if (i_mod_4 == 0):
-        A = fun_round(A, B, C, D, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
-    elif (i_mod_4 == 1):
-        D = fun_round(D, A, B, C, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
-    elif (i_mod_4 == 2):
-        C = fun_round(C, D, A, B, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
-    else:
-        B = fun_round(B, C, D, A, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
+    for k in range(64):
+        k_mod_4 = k % 4
+        k_div_16 = (k // 16)
+        num_round = k_div_16 + 1
+        if (k_mod_4 == 0):
+            A = fun_round(A, B, C, D, X[indices_de_X[k]], S[k_div_16][k_mod_4], T[k], num_round)
+        elif (k_mod_4 == 1):
+            D = fun_round(D, A, B, C, X[indices_de_X[k]], S[k_div_16][k_mod_4], T[k], num_round)
+        elif (k_mod_4 == 2):
+            C = fun_round(C, D, A, B, X[indices_de_X[k]], S[k_div_16][k_mod_4], T[k], num_round)
+        else:
+            B = fun_round(B, C, D, A, X[indices_de_X[k]], S[k_div_16][k_mod_4], T[k], num_round)
 
-AA += A
-BB += B
-CC += C
-DD += D
+    MD_buffer["A"] = A + AA
+    AA = MD_buffer["A"]
+    MD_buffer["B"] = B + BB
+    BB = MD_buffer["B"]
+    MD_buffer["C"] = C + CC
+    CC = MD_buffer["C"]
+    MD_buffer["D"] = D + DD
+    DD = MD_buffer["D"]
 
 bin_A = converteIntParaBinario(AA, 32)
 bin_B = converteIntParaBinario(BB, 32)
