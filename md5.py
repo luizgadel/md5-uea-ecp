@@ -28,40 +28,6 @@ def extensao_passo_2(msg_passo_1, b):
     return msg_passo_1 + b_64bit
 
 
-def inicializa_md_buffer():
-    MD_buffer_hex = {
-        "A": "01234567",
-        "B": "89abcdef",
-        "C": "fedcba98",
-        "D": "76543210"
-    }
-    MD_buffer = {}
-    for w in MD_buffer_hex:
-        nibble_bin = ""
-        for nibble_hex in MD_buffer_hex[w]:
-            nibble_bin += string_reversa(bin(int(nibble_hex, base=16))
-                                         [2:].zfill(tam_nibble))
-        MD_buffer[w] = nibble_bin
-
-    return MD_buffer
-
-
-def fun_round(a: int, b: int, c: int, d: int, x: int, s: int, t: int, num_round: int):
-    resultado_f_aux = ""
-    if (num_round == 1):
-        resultado_f_aux = fun_aux_F(b, c, d)
-    elif (num_round == 2):
-        resultado_f_aux = fun_aux_G(b, c, d)
-    elif (num_round == 3):
-        resultado_f_aux = fun_aux_H(b, c, d)
-    else:
-        resultado_f_aux = fun_aux_I(b, c, d)
-    a += resultado_f_aux + x + t
-    parcial_a_deslocar = a + resultado_f_aux + x + t
-    a = b + (parcial_a_deslocar << s)
-    return a
-
-
 T = [
     0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
     0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
@@ -82,41 +48,78 @@ T = [
 ]
 
 S = [
-    7, 12, 17, 22,
-    5, 9, 14, 20,
-    4, 11, 16, 23,
-    6, 10, 15, 21
+    [7, 12, 17, 22],
+    [5, 9, 14, 20],
+    [4, 11, 16, 23],
+    [6, 10, 15, 21]
+]
+
+indices_de_X = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+    1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12,
+    5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2,
+    0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9,
 ]
 
 mensagem = input("Digite a mensagem:")
 tam_msg_original = len(mensagem)
 msg_binaria = converteStrParaBinario(mensagem)
-imprimeBinario(msg_binaria)
 
-print("\nPasso 1: Extensão com bits de preenchimento")
+# Passo 1: Extensão com bits de preenchimento
 msg_passo_1 = extensao_passo_1(msg_binaria)
-imprimeBinario(msg_passo_1)
 
-print("\nPasso 2: Extensão com o valor do tamanho")
+# Passo 2: Extensão com o valor do tamanho
 msg_passo_2 = extensao_passo_2(msg_passo_1, tam_msg_original)
-imprimeBinario(msg_passo_2)
 tam_msg_p2 = len(msg_passo_2)
 
-print("\nPasso 3: Inicializar Buffer MD")
-MD_buffer = inicializa_md_buffer()
-print(MD_buffer)
+# Passo 3: Inicializar Buffer MD
+MD_buffer = {
+    "A": 0x67452301,
+    "B": 0xefcdab89,
+    "C": 0x98badcfe,
+    "D": 0x10325476
+}
 
-print("\nPasso 4: Processamento da mensagem em blocos de 16 palavras")
-qtd_words = tam_msg_p2/tam_palavra
+# Passo 4: Processamento da mensagem em blocos de 16 palavras
+qtd_palavras = tam_msg_p2//tam_palavra
 X = []
-for i in range(qtd_words):
+for i in range(qtd_palavras):
     inicio_p = tam_palavra*i
     iesima_palavra = msg_passo_2[inicio_p:inicio_p+tam_palavra]
     iesima_palavra_int = int(iesima_palavra, base=2)
     X.append(iesima_palavra_int)
 
-    AA = MD_buffer["A"]
-    BB = MD_buffer["B"]
-    CC = MD_buffer["C"]
-    DD = MD_buffer["D"]
-    # round 1
+A = MD_buffer["A"]
+AA = A
+B = MD_buffer["B"]
+BB = B
+C = MD_buffer["C"]
+CC = C
+D = MD_buffer["D"]
+DD = D
+
+for i in range(64):
+    i_mod_4 = i % 4
+    i_div_16 = (i // 16)
+    num_round = i_div_16 + 1
+    if (i_mod_4 == 0):
+        A = fun_round(A, B, C, D, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
+    elif (i_mod_4 == 1):
+        D = fun_round(D, A, B, C, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
+    elif (i_mod_4 == 2):
+        C = fun_round(C, D, A, B, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
+    else:
+        B = fun_round(B, C, D, A, X[indices_de_X[i]], S[i_div_16][i_mod_4], T[i], num_round)
+
+AA += A
+BB += B
+CC += C
+DD += D
+
+bin_A = converteIntParaBinario(AA, 32)
+bin_B = converteIntParaBinario(BB, 32)
+bin_C = converteIntParaBinario(CC, 32)
+bin_D = converteIntParaBinario(DD, 32)
+
+md = binParaHex(bin_A) + binParaHex(bin_B) + binParaHex(bin_C)  + binParaHex(bin_D)
+print(f"Hash: {md[0:6]} -> {md}")
